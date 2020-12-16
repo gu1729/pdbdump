@@ -243,7 +243,8 @@ int wmain(int argc, wchar_t* argv[])
     case SQLITE3:
         wprintf(L"CREATE TABLE pdb (\n");
         wprintf(L"  id INTEGER NOT NULL,\n");
-        wprintf(L"  name TEXT NOT NULL\n");
+        wprintf(L"  name TEXT NOT NULL,\n");
+        wprintf(L"  PRIMARY KEY (id)\n");
         wprintf(L");\n");
         wprintf(L"\n");
         TOPIC(_, __, SQLITE3_CREATE_TABLE);
@@ -252,27 +253,41 @@ int wmain(int argc, wchar_t* argv[])
         break;
     }
 
-    for (int i = 1, pdbs = 0; i < argc; i++) {
+    for (int i = 1, pdbs = 1; i < argc; i++) {
         OPTION(_, __, OPTION_HANDLER_DUMMY)
         if ((argv[i][1] != '\0') && ((argv[i][0] == '+') || (argv[i][0] == '-'))) {
         } else {
             switch (format) {
             case JSON:
-                if (pdbs > 0) {
+                if (pdbs > 1) {
                     wprintf(L",\n");
                 }
                 wprintf(L"  {\n");
                 wprintf(L"    \"name\": \"%s\",\n", argv[i]);
                 break;
             case XML:
-                // TODO
+                wprintf(L"  <pdb>\n");
+                wprintf(L"    <name><![CDATA[%s]]></name>\n", argv[i]);
                 break;
             case SQLITE3:
+                wprintf(L"INSERT INTO pdb (id, name) VALUES (%d, \"%s\");\n", pdbs, argv[i]);
                 break;
             }
-
             pdbs++;
         }
+    }
+
+    switch (format) {
+    case JSON:
+        wprintf(L"]\n");
+        break;
+    case XML:
+        wprintf(L"</pdbs>\n");
+        break;
+    case SQLITE3:
+        wprintf(L"\nCOMMIT;\n");
+        wprintf(L"\n");
+        break;
     }
 
     return EXIT_SUCCESS;

@@ -220,16 +220,17 @@
 
 #define SQLITE3_CREATE_COLUMN(topic, __, x, default, type, ...)   \
     if (DUMP_PROPERTY(topic, __, x) == true) {                    \
-        wprintf(L",\n  " #x " " SQLITE3_TYPE_##type " NOT NULL"); \
+        wprintf(L"  " #x " " SQLITE3_TYPE_##type " NOT NULL,\n"); \
     }
 
-#define SQLITE3_CREATE_TABLE(_, __, x, name, ...)   \
-    if (DUMP_TOPIC(_, __, x) == true) {             \
-        wprintf(L"CREATE TABLE " #name " (\n");     \
-        wprintf(L"  pdbId INTEGER NOT NULL");       \
-        x##_PROPERTY(x, __, SQLITE3_CREATE_COLUMN); \
-        wprintf(L"\n);\n");                         \
-        wprintf(L"\n");                             \
+#define SQLITE3_CREATE_TABLE(_, __, x, name, ...)                \
+    if (DUMP_TOPIC(_, __, x) == true) {                          \
+        wprintf(L"CREATE TABLE " #name " (\n");                  \
+        wprintf(L"  pdbId INTEGER NOT NULL,\n");                 \
+        x##_PROPERTY(x, __, SQLITE3_CREATE_COLUMN);              \
+        wprintf(L"  FOREIGN KEY (pdbId) REFERENCES pdb (id)\n"); \
+        wprintf(L");\n");                                        \
+        wprintf(L"\n");                                          \
     }
 
 #define OPTION(_, __, A)                      \
@@ -245,6 +246,5 @@
     } else
 
 #define OPTION_HANDLER_DUMMY(_, __, x, ...) \
-    if (wcscmp(x, argv[i]) == 0) {             \
+    if (wcscmp(x, argv[i]) == 0) {          \
     } else
-
