@@ -1,9 +1,12 @@
 #include <assert.h>
 #include <atlcomcli.h>
+#include <comdef.h>
+#include <regex>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "dia2.h"
+#include "pdbdump.h"
 
 #define FATAL_IF(condition, show_help, fmt, ...)   \
     if (condition) {                               \
@@ -35,52 +38,6 @@ void help()
 {
     wprintf(L"HELP!\n");
 }
-
-const wchar_t* const rgTags[] = {
-    L"(SymTagNull)",
-    L"Executable (Global)",
-    L"Compiland",
-    L"CompilandDetails",
-    L"CompilandEnv",
-    L"Function",
-    L"Block",
-    L"Data",
-    L"Annotation",
-    L"Label",
-    L"PublicSymbol",
-    L"UserDefinedType",
-    L"Enum",
-    L"FunctionType",
-    L"PointerType",
-    L"ArrayType",
-    L"BaseType",
-    L"Typedef",
-    L"BaseClass",
-    L"Friend",
-    L"FunctionArgType",
-    L"FuncDebugStart",
-    L"FuncDebugEnd",
-    L"UsingNamespace",
-    L"VTableShape",
-    L"VTable",
-    L"Custom",
-    L"Thunk",
-    L"CustomType",
-    L"ManagedType",
-    L"Dimension",
-    L"CallSite",
-    L"InlineSite",
-    L"BaseInterface",
-    L"VectorType",
-    L"MatrixType",
-    L"HLSLType",
-    L"Caller",
-    L"Callee",
-    L"Export",
-    L"HeapAllocationSite",
-    L"CoffGroup",
-    L"Inlinee",
-};
 
 class Dumper {
 protected:
@@ -246,112 +203,77 @@ public:
     void symbolEnd() { wprintf(L");\n"); }
 };
 
+typedef enum _e_FORMAT {
+    JSON,
+    XML,
+    SQLITE3
+} FORMAT;
+
+static bool show_help = false;
+static bool use_names = false;
+static FORMAT format = JSON;
+TOPIC(_, __, DEFINE_DUMP_ALL_PROPERTIES);
+TOPIC(_, __, DEFINE_DUMP_TOPIC);
+
 int wmain(int argc, wchar_t* argv[])
 {
-    if (argc < 2) {
-        FATAL_HELP("No commandline arguments given.");
+    for (int i = 1; i < argc; i++) {
+        OPTION(_, __, OPTION_HANDLER)
+        if ((argv[i][1] != '\0') && ((argv[i][0] == '+') || (argv[i][0] == '-'))) {
+            bool sign = argv[i][0] == '+' ? true : false;
+            std::wregex re(&argv[i][1]);
+            std::wcmatch m;
+            TOPIC(_, __, MATCH_ALL_PROPERTIES);
+        }
+    }
+    TOPIC(_, __, CALC_DUMP_TOPIC);
+
+    if (show_help == true) {
+        help();
     }
 
-    JSONDumper jsonDumper;
-    XMLDumper xmlDumper;
-    SQLite3Dumper sqlite3Dumper;
-    Dumper* dumper = (Dumper*)&jsonDumper;
+    switch (format) {
+    case JSON:
+        wprintf(L"[\n");
+        break;
+    case XML:
+        wprintf(L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
+        wprintf(L"<pdbs>\n");
+        break;
+    case SQLITE3:
+        wprintf(L"CREATE TABLE pdb (\n");
+        wprintf(L"  id INTEGER NOT NULL,\n");
+        wprintf(L"  name TEXT NOT NULL\n");
+        wprintf(L");\n");
+        wprintf(L"\n");
+        TOPIC(_, __, SQLITE3_CREATE_TABLE);
+        wprintf(L"BEGIN TRANSACTION;\n");
+        wprintf(L"\n");
+        break;
+    }
 
-    int start_idx = 1;
-
-    if (argv[1][0] == '-') {
-        if (wcscmp(L"--help", argv[1]) == 0) {
-            help();
-            return EXIT_SUCCESS;
-        } else if (wcscmp(L"--json", argv[1]) == 0) {
-            dumper = (Dumper*)&jsonDumper;
-        } else if (wcscmp(L"--xml", argv[1]) == 0) {
-            dumper = (Dumper*)&xmlDumper;
-        } else if (wcscmp(L"--sqlite3", argv[1]) == 0) {
-            dumper = (Dumper*)&sqlite3Dumper;
+    for (int i = 1, pdbs = 0; i < argc; i++) {
+        OPTION(_, __, OPTION_HANDLER_DUMMY)
+        if ((argv[i][1] != '\0') && ((argv[i][0] == '+') || (argv[i][0] == '-'))) {
         } else {
-            FATAL_IF(true, false, "Invalid option %s.", argv[1]);
-        }
-        start_idx++;
-    }
-
-    HRESULT hr = CoInitialize(NULL);
-
-    dumper->start();
-    dumper->push();
-    for (int idx = start_idx; idx < argc; idx++) {
-        if (idx > start_idx) {
-            dumper->pdbSeparator();
-        }
-        dumper->comment(argv[idx]);
-        ULONG pdbId = (ULONG)(idx - start_idx + 1);
-        dumper->pdbStart(pdbId, argv[idx]);
-        dumper->push();
-        CComPtr<IDiaDataSource> source;
-        if (FAILED(CoCreateInstance(CLSID_DiaSource, NULL, CLSCTX_INPROC_SERVER, __uuidof(IDiaDataSource), (void**)&source))) {
-            FATAL("Could not initialize CLSID_DiaSource. Please register msdiaXXX.dll.");
-        }
-        if (FAILED(source->loadDataFromPdb(argv[idx]))) {
-            if (FAILED(source->loadDataForExe(argv[idx], NULL, NULL))) {
-                FATAL("Could not load data from pdb/exe.");
+            switch (format) {
+            case JSON:
+                if (pdbs > 0) {
+                    wprintf(L",\n");
+                }
+                wprintf(L"  {\n");
+                wprintf(L"    \"name\": \"%s\",\n", argv[i]);
+                break;
+            case XML:
+                // TODO
+                break;
+            case SQLITE3:
+                break;
             }
+
+            pdbs++;
         }
-        CComPtr<IDiaSession> session;
-        if (FAILED(source->openSession(&session))) {
-            FATAL("Could not open session.");
-        }
-        CComPtr<IDiaSymbol> global;
-        if (FAILED(session->get_globalScope(&global))) {
-            FATAL("Could not query global scope.");
-        }
-        dumper->listStart(L"symbols");
-        dumper->push();
-        CComPtr<IDiaEnumSymbols> pEnum;
-        CComPtr<IDiaSymbol> pSymbol;
-        ULONG celt;
-        hr = global->findChildren(SymTagNull, NULL, nsNone, &pEnum);
-        if (SUCCEEDED(hr)) {
-            ULONG symbols = 0;
-            while (SUCCEEDED(hr = pEnum->Next(1, &pSymbol, &celt)) && celt == 1) {
-                if (symbols > 0) {
-                    dumper->symbolSeparator();
-                }
-                dumper->symbolStart(pdbId);
-                dumper->push();
-                DWORD symIndexId = 0;
-                if (FAILED(pSymbol->get_symIndexId(&symIndexId))) {
-                    FATAL("Could not get symbol symIndexId.")
-                }
-                dumper->attribute(L"symIndexId", symIndexId, true);
-                BSTR name;
-                if (FAILED(pSymbol->get_name(&name))) {
-                    FATAL("Could not get symbol name.");
-                }
-                dumper->attribute(L"name", name, true);
-                SysFreeString(name);
-                DWORD symTag = 0;
-                if (FAILED(pSymbol->get_symTag(&symTag))) {
-                    FATAL("Could not get symbol symTag.")
-                }
-                dumper->attribute(L"symTag", (wchar_t*)SafeDRef(rgTags, symTag), true);
-                ULONGLONG length = 0;
-                if (FAILED(pSymbol->get_length(&length))) {
-                    FATAL("Could not get symbol length.")
-                }
-                dumper->attribute(L"length", length, false);
-                dumper->pop();
-                dumper->symbolEnd();
-                pSymbol = 0;
-                symbols++;
-            }
-        }
-        dumper->pop();
-        dumper->listEnd(L"symbols");
-        dumper->pop();
-        dumper->pdbEnd();
     }
-    dumper->pop();
-    dumper->end();
 
     return EXIT_SUCCESS;
 }
