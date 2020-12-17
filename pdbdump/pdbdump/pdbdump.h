@@ -30,7 +30,7 @@
     A(_, __, baseSymbolId, false, DWORD)                         \
     A(_, __, baseType, false, DWORD, BasicType)                  \
     A(_, __, bitPosition, false, DWORD)                          \
-    A(_, __, buildInKind, false, DWORD)                          \
+    A(_, __, builtInKind, false, DWORD)                          \
     A(_, __, callingConvention, false, DWORD, CV_call_e)         \
     A(_, __, classParentId, false, DWORD)                        \
     A(_, __, code, false, BOOL)                                  \
@@ -79,7 +79,7 @@
     A(_, __, isDataAligned, false, BOOL)                         \
     A(_, __, isHLSLData, false, BOOL)                            \
     A(_, __, isHotpatchable, false, BOOL)                        \
-    A(_, __, iSLTCG, false, BOOL)                                \
+    A(_, __, isLTCG, false, BOOL)                                \
     A(_, __, isMatrixRowMajor, false, BOOL)                      \
     A(_, __, isMSILNetmodule, false, BOOL)                       \
     A(_, __, isMultipleInheritance, false, BOOL)                 \
@@ -111,7 +111,7 @@
     A(_, __, managed, false, BOOL)                               \
     A(_, __, memorySpaceKind, false, DWORD)                      \
     A(_, __, msil, false, BOOL)                                  \
-    A(_, __, name, false, BSTR)                                  \
+    A(_, __, name, true, BSTR)                                  \
     A(_, __, nested, false, BOOL)                                \
     A(_, __, noInline, false, BOOL)                              \
     A(_, __, noReturn, false, BOOL)                              \
@@ -122,7 +122,7 @@
     A(_, __, numberOfModifiers, false, DWORD)                    \
     A(_, __, numberOfRegisterIndices, false, DWORD)              \
     A(_, __, numberOfRows, false, DWORD)                         \
-    A(_, __, objectFilename, false, BSTR)                        \
+    A(_, __, objectFileName, false, BSTR)                        \
     A(_, __, oemId, false, DWORD)                                \
     A(_, __, oemSymbolId, false, DWORD)                          \
     A(_, __, offset, false, LONG)                                \
@@ -231,6 +231,108 @@
         wprintf(L"  FOREIGN KEY (pdbId) REFERENCES pdb (id)\n"); \
         wprintf(L");\n");                                        \
         wprintf(L"\n");                                          \
+    }
+
+#define CONSTRUCT_PROPERTY_BOOL BOOL _property = 0;
+#define DESTRUCT_PROPERTY_BOOL
+#define CONSTRUCT_PROPERTY_DWORD DWORD _property = 0;
+#define DESTRUCT_PROPERTY_DWORD
+#define CONSTRUCT_PROPERTY_LONG LONG _property = 0;
+#define DESTRUCT_PROPERTY_LONG
+#define CONSTRUCT_PROPERTY_ULONGLONG ULONGLONG _property = 0;
+#define DESTRUCT_PROPERTY_ULONGLONG
+#define CONSTRUCT_PROPERTY_GUID GUID _property;
+#define DESTRUCT_PROPERTY_GUID
+#define CONSTRUCT_PROPERTY_VARIANT VARIANT _property;
+#define DESTRUCT_PROPERTY_VARIANT
+#define CONSTRUCT_PROPERTY_BSTR BSTR _property;
+#define DESTRUCT_PROPERTY_BSTR SysFreeString(_property);
+
+#define SERIALIZE_PROPERTY_BOOL(x)                  \
+    switch (format) {                               \
+    case JSON:                                      \
+        wprintf(L", \"" #x "\" : %hhu", _property); \
+        break;                                      \
+    case XML:                                       \
+        break;                                      \
+    case SQLITE3:                                   \
+        break;                                      \
+    }
+
+#define SERIALIZE_PROPERTY_DWORD(x)               \
+    switch (format) {                             \
+    case JSON:                                    \
+        wprintf(L", \"" #x "\" : %u", _property); \
+        break;                                    \
+    case XML:                                     \
+        break;                                    \
+    case SQLITE3:                                 \
+        break;                                    \
+    }
+
+#define SERIALIZE_PROPERTY_LONG(x)                 \
+    switch (format) {                              \
+    case JSON:                                     \
+        wprintf(L", \"" #x "\" : %ld", _property); \
+        break;                                     \
+    case XML:                                      \
+        break;                                     \
+    case SQLITE3:                                  \
+        break;                                     \
+    }
+
+#define SERIALIZE_PROPERTY_ULONGLONG(x)             \
+    switch (format) {                               \
+    case JSON:                                      \
+        wprintf(L", \"" #x "\" : %llu", _property); \
+        break;                                      \
+    case XML:                                       \
+        break;                                      \
+    case SQLITE3:                                   \
+        break;                                      \
+    }
+
+#define SERIALIZE_PROPERTY_GUID(x)    \
+    switch (format) {                 \
+    case JSON:                        \
+        wprintf(L", \"" #x "\" : 0"); \
+        break;                        \
+    case XML:                         \
+        break;                        \
+    case SQLITE3:                     \
+        break;                        \
+    }
+
+#define SERIALIZE_PROPERTY_VARIANT(x) \
+    switch (format) {                 \
+    case JSON:                        \
+        wprintf(L", \"" #x "\" : 0"); \
+        break;                        \
+    case XML:                         \
+        break;                        \
+    case SQLITE3:                     \
+        break;                        \
+    }
+
+#define SERIALIZE_PROPERTY_BSTR(x)                    \
+    switch (format) {                                 \
+    case JSON:                                        \
+        wprintf(L", \"" #x "\" : \"%s\"", _property); \
+        break;                                        \
+    case XML:                                         \
+        break;                                        \
+    case SQLITE3:                                     \
+        break;                                        \
+    }
+
+#define DO_DUMP_PROPERTY(topic, item, x, default, type, ...) \
+    if (DUMP_PROPERTY(topic, __, x) == true) {               \
+        CONSTRUCT_PROPERTY_##type;                           \
+        if (FAILED(item->get_##x(&_property))) {             \
+            FATAL("Could not get property " #x ".");         \
+        }                                                    \
+        SERIALIZE_PROPERTY_##type(x);                        \
+        DESTRUCT_PROPERTY_##type;                            \
     }
 
 #define OPTION(_, __, A)                      \
