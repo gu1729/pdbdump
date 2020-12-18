@@ -13,10 +13,24 @@ typedef struct line {
     POINT* b;
 } LINE;
 
-int main() {
+typedef enum weekday {
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    SUNDAY
+} WEEKDAY;
+
+int main()
+{
     POINT a;
     POINT b;
-    a.x = 0.0;
+    CIRCLE cir;
+    WEEKDAY w = MONDAY;
+    cir.radius = 99.0;
+    a.x = w;
     a.y = 0.0;
     b.x = 1.0;
     b.y = 1.0;
