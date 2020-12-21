@@ -16,6 +16,7 @@ TOPIC(_, __, DEFINE_DUMP_TOPIC);
 int wmain(int argc, wchar_t* argv[])
 {
 
+    ULONG celt;
     HRESULT hr = CoInitialize(NULL);
 
     for (int i = 1; i < argc; i++) {
@@ -71,7 +72,6 @@ int wmain(int argc, wchar_t* argv[])
             if (FAILED(CoCreateInstance(CLSID_DiaSource, NULL, CLSCTX_INPROC_SERVER, __uuidof(IDiaDataSource), (void**)&source))) {
                 FATAL("Could not initialize CLSID_DiaSource. Please register msdiaXXX.dll.");
             }
-            CComPtr<IDiaEnumSymbols> enumSymbols;
             CComPtr<IDiaSymbol> symbol;
             if (FAILED(source->loadDataFromPdb(argv[i]))) {
                 if (FAILED(source->loadDataForExe(argv[i], NULL, NULL))) {
@@ -94,7 +94,6 @@ int wmain(int argc, wchar_t* argv[])
                 }
                 wprintf(L"  {\n");
                 wprintf(L"    \"name\" : \"%ls\",\n", argv[i]);
-                wprintf(L"    \"symbols\" : [\n");
                 break;
             case Format::XML:
                 wprintf(L"  <pdb>\n");
@@ -105,50 +104,76 @@ int wmain(int argc, wchar_t* argv[])
                 break;
             }
 
-            ULONG celt;
-            hr = global->findChildren(SymTagNull, NULL, nsNone, &enumSymbols);
-            if (SUCCEEDED(hr)) {
-                ULONG symbols = 0;
-                while (SUCCEEDED(hr = enumSymbols->Next(1, &symbol, &celt)) && celt == 1) {
-                    symbols++;
-                    switch (format) {
-                    case Format::JSON:
-                        if (symbols > 1) {
-                            wprintf(L",\n");
-                        }
-                        wprintf(L"      {\"pdbId\" : %lu", pdbId);
-                        break;
-                    case Format::XML:
-                        wprintf(L"    <symbol>");
-                        break;
-                    case Format::SQLITE3:
-                        wprintf(L"INSERT INTO symbol (pdbId");
-                        SYMBOL_PROPERTY(SYMBOL, __, SERIALIZE_PROPERTY_NAME);
-                        wprintf(L") VALUES (%lu", pdbId);
-                        break;
+            ULONG topics = 0;
+
+            if (dump_SYMBOL == true) {
+                topics++;
+
+                switch (format) {
+                case Format::JSON:
+                    if (topics > 1) {
+                        wprintf(L",\n");
                     }
-                    SYMBOL_PROPERTY(SYMBOL, __, SERIALIZE_PROPERTY);
-                    switch (format) {
-                    case Format::JSON:
-                        wprintf(L"}");
-                        break;
-                    case Format::XML:
-                        wprintf(L"</symbol>\n");
-                        break;
-                    case Format::SQLITE3:
-                        wprintf(L");\n");
-                        break;
-                    }
-                    symbol = 0;
+                    wprintf(L"    \"symbols\" : [\n");
+                    break;
+                case Format::XML:
+                    break;
+                case Format::SQLITE3:
+                    break;
                 }
-            } else {
-                FATAL("Could not find symbol children of global");
+                CComPtr<IDiaEnumSymbols> enumSymbols;
+                hr = global->findChildren(SymTagNull, NULL, nsNone, &enumSymbols);
+                if (SUCCEEDED(hr)) {
+                    ULONG symbols = 0;
+                    while (SUCCEEDED(hr = enumSymbols->Next(1, &symbol, &celt)) && celt == 1) {
+                        symbols++;
+                        switch (format) {
+                        case Format::JSON:
+                            if (symbols > 1) {
+                                wprintf(L",\n");
+                            }
+                            wprintf(L"      {\"pdbId\" : %lu", pdbId);
+                            break;
+                        case Format::XML:
+                            wprintf(L"    <symbol>");
+                            break;
+                        case Format::SQLITE3:
+                            wprintf(L"INSERT INTO symbol (pdbId");
+                            SYMBOL_PROPERTY(SYMBOL, __, SERIALIZE_PROPERTY_NAME);
+                            wprintf(L") VALUES (%lu", pdbId);
+                            break;
+                        }
+                        SYMBOL_PROPERTY(SYMBOL, __, SERIALIZE_PROPERTY);
+                        switch (format) {
+                        case Format::JSON:
+                            wprintf(L"}");
+                            break;
+                        case Format::XML:
+                            wprintf(L"</symbol>\n");
+                            break;
+                        case Format::SQLITE3:
+                            wprintf(L");\n");
+                            break;
+                        }
+                        symbol = 0;
+                    }
+                } else {
+                    FATAL("Could not find symbol children of global");
+                }
+                switch (format) {
+                case Format::JSON:
+                    wprintf(L"    ]\n");
+                    break;
+                case Format::XML:
+                    break;
+                case Format::SQLITE3:
+                    break;
+                }
             }
 
             switch (format) {
             case Format::JSON:
-                wprintf(L"    ]\n");
-                wprintf(L"  }");
+                wprintf(L"\n  }");
                 break;
             case Format::XML:
                 wprintf(L"  </pdb>\n");
