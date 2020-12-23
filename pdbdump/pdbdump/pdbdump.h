@@ -6,8 +6,8 @@
     wprintf(L"ERROR: " L##fmt L"\n", __VA_ARGS__); \
     exit(EXIT_FAILURE);
 
-#define TOPIC(_, __, A)        \
-    A(_, __, SEGMENT, segment) \
+#define TOPIC(_, __, A)              \
+    /* A(_, __, SEGMENT, segment) */ \
     A(_, __, SYMBOL, symbol)
 
 #define SEGMENT_PROPERTY(_, __, A)                 \
@@ -216,6 +216,12 @@
 #define MATCH_ALL_PROPERTIES(_, __, x, name, ...) \
     x##_PROPERTY(x, name, MATCH_PROPERTY)
 
+#define LIST_PROPERTY(topic, name, x, ...) \
+    wprintf(PROPERTY_FQNAME(topic, name, x, ...) "\n");
+
+#define LIST_ALL_PROPERTIES(_, __, x, name, ...) \
+    x##_PROPERTY(x, name, LIST_PROPERTY)
+
 #define SQLITE3_TYPE_BOOL L"INTEGER"
 #define SQLITE3_TYPE_DWORD L"INTEGER"
 #define SQLITE3_TYPE_LONG L"INTEGER"
@@ -343,6 +349,7 @@
 #define OPTION(_, __, A)                        \
     A(_, __, L"--help", showHelp = true;)       \
     A(_, __, L"--version", showVersion = true;) \
+    A(_, __, L"--list", showList = true;)       \
     A(_, __, L"--json", format = Format::JSON;) \
     A(_, __, L"--xml", format = Format::XML;)   \
     A(_, __, L"--sqlite3", format = Format::SQLITE3;)

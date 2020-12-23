@@ -21,13 +21,14 @@ Hint: the pdbdump tool only works on PDB files that have been
 generated using the linker option `/DEBUG:FULL`.
 
 ## Options
-
+```
 --help        show this help
 --version     show version number
+--list        list all supported properties
 --json        output JSON, default
 --xml         output XML
 --sqlite3     output SQLite3, including table generation
-
+```
 ## Filter
 PDB files contain a lot of information, much of which might not be
 of interest to you. To keep processes fast and output small, you
@@ -92,6 +93,9 @@ documentation of the DIA SDK (Debug Interface Access SDK).
 
 # Author
 Written by Georg Ulbrich.
+
+# Copyright
+Copyright (C) 2020 by Georg Ulbrich. License MIT.
 
 # Homepage
 The pdbdump project is hosted at https://github.com/gu1729/pdbdump.

@@ -11,6 +11,7 @@
 static Format format = Format::JSON;
 static bool showHelp = false;
 static bool showVersion = false;
+static bool showList = false;
 TOPIC(_, __, DEFINE_DUMP_ALL_PROPERTIES);
 TOPIC(_, __, DEFINE_DUMP_TOPIC);
 
@@ -38,6 +39,11 @@ int wmain(int argc, wchar_t* argv[])
 
     if (showVersion == true) {
         wprintf(VERSION "\n");
+        exit(EXIT_SUCCESS);
+    }
+
+    if (showList == true) {
+        TOPIC(_, __, LIST_ALL_PROPERTIES);
         exit(EXIT_SUCCESS);
     }
 
