@@ -10,6 +10,7 @@
 
 static Format format = Format::JSON;
 static bool showHelp = false;
+static bool showVersion = false;
 TOPIC(_, __, DEFINE_DUMP_ALL_PROPERTIES);
 TOPIC(_, __, DEFINE_DUMP_TOPIC);
 
@@ -31,7 +32,12 @@ int wmain(int argc, wchar_t* argv[])
     TOPIC(_, __, CALC_DUMP_TOPIC);
 
     if (showHelp == true) {
-        wprintf(L"HELP!\n");
+#include "help.h"
+        exit(EXIT_SUCCESS);
+    }
+
+    if (showVersion == true) {
+        wprintf(VERSION "\n");
         exit(EXIT_SUCCESS);
     }
 

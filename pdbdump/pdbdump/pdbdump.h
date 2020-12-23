@@ -1,5 +1,7 @@
 #pragma once
 
+#define VERSION L"1.0"
+
 #define FATAL(fmt, ...)                            \
     wprintf(L"ERROR: " L##fmt L"\n", __VA_ARGS__); \
     exit(EXIT_FAILURE);
@@ -340,6 +342,7 @@
 
 #define OPTION(_, __, A)                        \
     A(_, __, L"--help", showHelp = true;)       \
+    A(_, __, L"--version", showVersion = true;) \
     A(_, __, L"--json", format = Format::JSON;) \
     A(_, __, L"--xml", format = Format::XML;)   \
     A(_, __, L"--sqlite3", format = Format::SQLITE3;)
