@@ -71,6 +71,11 @@ int wmain(int argc, wchar_t* argv[])
         wprintf(L"BEGIN TRANSACTION;\n");
         wprintf(L"\n");
         break;
+    case Format::CSV:
+        wprintf(L"\"pdb\"");
+        SYMBOL_PROPERTY(SYMBOL, __, CSV_CREATE_COLUMN);
+        wprintf(L"\n");
+        break;
     }
 
     ULONG pdbId = 0;
@@ -114,6 +119,8 @@ int wmain(int argc, wchar_t* argv[])
             case Format::SQLITE3:
                 wprintf(L"INSERT INTO pdb (id, name) VALUES (%lu, \"%s\");\n", pdbId, argv[i]);
                 break;
+            case Format::CSV:
+                break;
             }
 
             ULONG topics = 0;
@@ -131,6 +138,8 @@ int wmain(int argc, wchar_t* argv[])
                 case Format::XML:
                     break;
                 case Format::SQLITE3:
+                    break;
+                case Format::CSV:
                     break;
                 }
                 CComPtr<IDiaEnumSymbols> enumSymbols;
@@ -154,6 +163,9 @@ int wmain(int argc, wchar_t* argv[])
                             SYMBOL_PROPERTY(SYMBOL, __, SERIALIZE_PROPERTY_NAME);
                             wprintf(L") VALUES (%lu", pdbId);
                             break;
+                        case Format::CSV:
+                            wprintf(L"%d", i);
+                            break;
                         }
                         SYMBOL_PROPERTY(SYMBOL, __, SERIALIZE_PROPERTY);
                         switch (format) {
@@ -165,6 +177,9 @@ int wmain(int argc, wchar_t* argv[])
                             break;
                         case Format::SQLITE3:
                             wprintf(L");\n");
+                            break;
+                        case Format::CSV:
+                            wprintf(L"\n");
                             break;
                         }
                         symbol = 0;
@@ -191,6 +206,9 @@ int wmain(int argc, wchar_t* argv[])
                 wprintf(L"  </pdb>\n");
                 break;
             case Format::SQLITE3:
+                wprintf(L"\n");
+                break;
+            case Format::CSV:
                 wprintf(L"\n");
                 break;
             }

@@ -235,6 +235,11 @@
         wprintf(L"  " L## #x L" " SQLITE3_TYPE_##type L" NOT NULL,\n"); \
     }
 
+#define CSV_CREATE_COLUMN(topic, __, x, default, type, ...)         \
+    if (DUMP_PROPERTY(topic, __, x) == true) {                      \
+        wprintf(L",\"" L## #x L"\"");                               \
+    }
+
 #define DEFINE_PROPERTY_BOOL static BOOL value = 0;
 #define DEFINE_PROPERTY_DWORD static DWORD value = 0;
 #define DEFINE_PROPERTY_LONG static LONG value = 0;
@@ -254,6 +259,9 @@
     case Format::SQLITE3:                                 \
         wprintf(L", %d", value);                          \
         break;                                            \
+    case Format::CSV:                                     \
+        wprintf(L",%d", value);                           \
+        break;                                            \
     }
 
 #define SERIALIZE_PROPERTY_DWORD(x)                        \
@@ -266,6 +274,9 @@
         break;                                             \
     case Format::SQLITE3:                                  \
         wprintf(L", %lu", value);                          \
+        break;                                             \
+    case Format::CSV:                                      \
+        wprintf(L",%lu", value);                           \
         break;                                             \
     }
 
@@ -280,6 +291,9 @@
     case Format::SQLITE3:                                  \
         wprintf(L", %ld", value);                          \
         break;                                             \
+    case Format::CSV:                                      \
+        wprintf(L",%ld", value);                           \
+        break;                                             \
     }
 
 #define SERIALIZE_PROPERTY_ULONGLONG(x)                     \
@@ -293,6 +307,9 @@
     case Format::SQLITE3:                                   \
         wprintf(L", %llu", value);                          \
         break;                                              \
+    case Format::CSV:                                       \
+        wprintf(L",%llu", value);                           \
+        break;                                              \
     }
 
 #define SERIALIZE_PROPERTY_GUID(x)         \
@@ -304,6 +321,9 @@
         break;                             \
     case Format::SQLITE3:                  \
         wprintf(L", \"\"");                \
+        break;                             \
+    case Format::CSV:                      \
+        wprintf(L",0");                    \
         break;                             \
     }
 
@@ -317,6 +337,9 @@
     case Format::SQLITE3:                  \
         wprintf(L", \"\"");                \
         break;                             \
+    case Format::CSV:                      \
+        wprintf(L",0");                    \
+        break;                             \
     }
 
 #define SERIALIZE_PROPERTY_BSTR(x)                                     \
@@ -329,6 +352,9 @@
         break;                                                         \
     case Format::SQLITE3:                                              \
         wprintf(L", \"%ls\"", value);                                  \
+        break;                                                         \
+    case Format::CSV:                                                  \
+        wprintf(L",\"%ls\"", value);                 \
         break;                                                         \
     }
 
@@ -352,6 +378,7 @@
     A(_, __, L"--list", showList = true;)       \
     A(_, __, L"--json", format = Format::JSON;) \
     A(_, __, L"--xml", format = Format::XML;)   \
+    A(_, __, L"--csv", format = Format::CSV;)   \
     A(_, __, L"--sqlite3", format = Format::SQLITE3;)
 
 #define OPTION_HANDLER(_, __, x, handler, ...) \
@@ -366,5 +393,6 @@
 enum class Format {
     JSON,
     XML,
-    SQLITE3
+    SQLITE3,
+    CSV
 };
