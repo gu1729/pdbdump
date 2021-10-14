@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION L"1.0.0"
+#define VERSION L"1.1.0"
 
 #define FATAL(fmt, ...)                            \
     wprintf(L"ERROR: " L##fmt L"\n", __VA_ARGS__); \

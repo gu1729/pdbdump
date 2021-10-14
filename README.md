@@ -28,6 +28,7 @@ generated using the linker option `/DEBUG:FULL`.
 --json        output JSON, default
 --xml         output XML
 --sqlite3     output SQLite3, including table generation
+--csv         output CSV
 ```
 ## Filter
 PDB files contain a lot of information, much of which might not be
@@ -92,10 +93,10 @@ For the meaning of the symbols properties etc., consult the
 documentation of the DIA SDK (Debug Interface Access SDK).
 
 # Author
-Written by Georg Ulbrich.
+Written by Georg Ulbrich. Contributions by Graham Sutherland.
 
 # Copyright
-Copyright (C) 2020 by Georg Ulbrich. License MIT.
+Copyright (C) 2021 by Georg Ulbrich. License MIT.
 
 # Homepage
 The pdbdump project is hosted at https://github.com/gu1729/pdbdump.
