@@ -11,6 +11,7 @@
 static Format format = Format::JSON;
 static bool showHelp = false;
 static bool showVersion = false;
+static bool showLicense = false;
 static bool showList = false;
 TOPIC(_, __, DEFINE_DUMP_ALL_PROPERTIES);
 TOPIC(_, __, DEFINE_DUMP_TOPIC);
@@ -34,6 +35,11 @@ int wmain(int argc, wchar_t* argv[])
 
     if (showHelp == true) {
 #include "help.h"
+        exit(EXIT_SUCCESS);
+    }
+
+    if (showLicense == true) {
+#include "license.h"
         exit(EXIT_SUCCESS);
     }
 

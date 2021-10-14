@@ -24,6 +24,7 @@ generated using the linker option `/DEBUG:FULL`.
 ```
 --help        show this help
 --version     show version number
+--license     show license
 --list        list all supported properties
 --json        output JSON, default
 --xml         output XML
@@ -100,4 +101,3 @@ Copyright (C) 2021 by Georg Ulbrich. License MIT.
 
 # Homepage
 The pdbdump project is hosted at https://github.com/gu1729/pdbdump.
-

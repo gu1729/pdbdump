@@ -375,6 +375,7 @@
 #define OPTION(_, __, A)                              \
     A(_, __, L"--help", showHelp = true;)             \
     A(_, __, L"--version", showVersion = true;)       \
+    A(_, __, L"--license", showLicense = true;)       \
     A(_, __, L"--list", showList = true;)             \
     A(_, __, L"--json", format = Format::JSON;)       \
     A(_, __, L"--xml", format = Format::XML;)         \
