@@ -372,14 +372,14 @@
         wprintf(L", " L## #x);                     \
     }
 
-#define OPTION(_, __, A)                        \
-    A(_, __, L"--help", showHelp = true;)       \
-    A(_, __, L"--version", showVersion = true;) \
-    A(_, __, L"--list", showList = true;)       \
-    A(_, __, L"--json", format = Format::JSON;) \
-    A(_, __, L"--xml", format = Format::XML;)   \
-    A(_, __, L"--csv", format = Format::CSV;)   \
-    A(_, __, L"--sqlite3", format = Format::SQLITE3;)
+#define OPTION(_, __, A)                              \
+    A(_, __, L"--help", showHelp = true;)             \
+    A(_, __, L"--version", showVersion = true;)       \
+    A(_, __, L"--list", showList = true;)             \
+    A(_, __, L"--json", format = Format::JSON;)       \
+    A(_, __, L"--xml", format = Format::XML;)         \
+    A(_, __, L"--sqlite3", format = Format::SQLITE3;) \
+    A(_, __, L"--csv", format = Format::CSV;)
 
 #define OPTION_HANDLER(_, __, x, handler, ...) \
     if (wcscmp(x, argv[i]) == 0) {             \

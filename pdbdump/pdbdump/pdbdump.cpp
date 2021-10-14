@@ -226,6 +226,8 @@ int wmain(int argc, wchar_t* argv[])
         wprintf(L"COMMIT;\n");
         wprintf(L"\n");
         break;
+    case Format::CSV:
+        break;
     }
 
     exit(EXIT_SUCCESS);

@@ -28,6 +28,7 @@ wprintf(L"       --list        list all supported properties\n");
 wprintf(L"       --json        output JSON, default\n");
 wprintf(L"       --xml         output XML\n");
 wprintf(L"       --sqlite3     output SQLite3, including table generation\n");
+wprintf(L"       --csv         output CSV\n");
 wprintf(L"         \n");
 wprintf(L"FILTER\n");
 wprintf(L"       PDB files contain a lot of information, much of which might not be\n");
@@ -92,7 +93,7 @@ wprintf(L"       For the meaning of the symbols properties etc., consult the\n")
 wprintf(L"       documentation of the DIA SDK (Debug Interface Access SDK).\n");
 wprintf(L"\n");
 wprintf(L"AUTHOR\n");
-wprintf(L"       Written by Georg Ulbrich.\n");
+wprintf(L"       Written by Georg Ulbrich. Contributions by Graham Sutherland.\n");
 wprintf(L"\n");
 wprintf(L"COPYRIGHT\n");
 wprintf(L"       Copyright (C) 2020 by Georg Ulbrich. License MIT.\n");
