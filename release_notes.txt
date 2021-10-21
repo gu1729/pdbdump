@@ -1,2 +1,6 @@
+2021-10-22, v1.2.0
++ fixed JSON encoding issues
++ added testcases
+
 2021-10-14, v1.1.0
 + added support for CSV output

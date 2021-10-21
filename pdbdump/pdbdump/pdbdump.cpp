@@ -16,6 +16,38 @@ static bool showList = false;
 TOPIC(_, __, DEFINE_DUMP_ALL_PROPERTIES);
 TOPIC(_, __, DEFINE_DUMP_TOPIC);
 
+void wprint_string_bstr(Format format, BSTR value) {
+    int len = SysStringLen(value);
+    WCHAR s[2] = {0, 0};
+    for (int i = 0; i < len; i++) {
+        s[0] = value[i];
+        switch (format) {
+        case Format::JSON:
+            if ((s[0] == '"') || (s[0] == '\\') || ('\x00' <= s[0] && s[0] <= '\x1f') || (s[0] >= 128)) {
+                wprintf(L"\\u%04x", s[0]);
+            } else {
+                wprintf(L"%s", s);
+            }
+            break;
+        case Format::XML:
+            wprintf(L"%s", s);
+            break;
+        case Format::SQLITE3:
+            wprintf(L"%s", s);
+            break;
+        case Format::CSV:
+            wprintf(L"%s", s);
+            break;
+        }
+    }
+}
+
+void wprint_string_wchar(Format format, WCHAR* value) {
+    BSTR bstr = SysAllocString(value);
+    wprint_string_bstr(format, bstr);
+    SysFreeString(bstr);
+}
+
 int wmain(int argc, wchar_t* argv[])
 {
 
@@ -116,7 +148,9 @@ int wmain(int argc, wchar_t* argv[])
                     wprintf(L",\n");
                 }
                 wprintf(L"  {\n");
-                wprintf(L"    \"name\" : \"%ls\",\n", argv[i]);
+                wprintf(L"    \"name\" : \"");
+                wprint_string_wchar(Format::JSON, argv[i]);
+                wprintf(L"\",\n");
                 break;
             case Format::XML:
                 wprintf(L"  <pdb>\n");

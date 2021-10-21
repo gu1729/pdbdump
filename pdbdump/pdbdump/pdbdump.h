@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION L"1.1.0"
+#define VERSION L"1.2.0"
 
 #define FATAL(fmt, ...)                            \
     wprintf(L"ERROR: " L##fmt L"\n", __VA_ARGS__); \
@@ -345,7 +345,9 @@
 #define SERIALIZE_PROPERTY_BSTR(x)                                     \
     switch (format) {                                                  \
     case Format::JSON:                                                 \
-        wprintf(L", \"" L## #x L"\" : \"%ls\"", value);                \
+        wprintf(L", \"" L## #x L"\" : \"");                            \
+        wprint_string_bstr(Format::JSON, value);                       \
+        wprintf(L"\"");                                                \
         break;                                                         \
     case Format::XML:                                                  \
         wprintf(L"<" L## #x L"><![CDATA[%ls]]></" L## #x L">", value); \
@@ -354,7 +356,7 @@
         wprintf(L", \"%ls\"", value);                                  \
         break;                                                         \
     case Format::CSV:                                                  \
-        wprintf(L",\"%ls\"", value);                 \
+        wprintf(L",\"%ls\"", value);                                   \
         break;                                                         \
     }
 
